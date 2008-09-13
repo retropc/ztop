@@ -27,6 +27,7 @@ protected:
 public:
   virtual bool match(address_t addr) = 0;
   virtual AddressComparator *clone() const = 0;
+  virtual ~AddressComparator();
   bool match(std::string addr);
 };
 
