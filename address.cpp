@@ -38,6 +38,10 @@ bool AddressComparator::match(string address) {
   return match(this->string_to_addr(address));
 }
 
+AddressComparator::~AddressComparator() {
+  /* EMPTY */
+}
+
 /**********************************************
  * PlainAddress
  **********************************************/

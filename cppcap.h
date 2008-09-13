@@ -64,7 +64,7 @@ protected:
   bpf_u_int32 l2headerlength;
 
 public:
-  struct sniff_ethernet *ethernetheader;
+  const struct sniff_ethernet *ethernetheader;
 
   PCapEthernetFrame(const PCapEthernetFrame &p);
   PCapEthernetFrame(const struct pcap_pkthdr *header, const u_char *packet);
@@ -84,7 +84,7 @@ private:
   PCapIPv4Packet();
   void init(const PCapEthernetFrame &packet);
 public:
-  struct sniff_ip *ipheader;
+  const struct sniff_ip *ipheader;
 
   PCapIPv4Packet(const PCapEthernetFrame &packet);
 };
@@ -92,6 +92,7 @@ public:
 class PCapIPv4PacketHandler: public PCapPacketHandler {
 public:
   virtual void execute(const PCapIPv4Packet &packet) = 0;
+  virtual ~PCapIPv4PacketHandler();
 };
 
 #endif
