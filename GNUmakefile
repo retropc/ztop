@@ -1,10 +1,18 @@
 CXXFLAGS=-Wall -g3
 LDFLAGS=-lpcap
+LDLIBS=
+
+DEFAULT:	ztop
 
 .PHONY:	clean
 
+.SUFFIXES:	.cpp
+
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -c $<
+
 ztop:	main.o counters.o protocol.o address.o filters.o cppcap.o display.o
-	$(CXX) $(LDFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LDLIBS) $^ -o $@
 
 main.o:	address.h counters.h cppcap.h display.h protocol.h filters.h protocol.h address.h filters.h filters.zpp
 
