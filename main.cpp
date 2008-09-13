@@ -69,8 +69,10 @@ int main(void) {
 
   FilterList *f = new FilterList();
 
-  for(AddressComparator **cl=c;*cl;cl++)
+  for(AddressComparator **cl=c;*cl;cl++) {
     f->add(**cl);
+    delete *cl;
+  }
 
   PacketCounter *cc = new PacketCounter();
   CounterDisplay d(*cc);
@@ -79,6 +81,11 @@ int main(void) {
 
   p->ipv4handler = ff;
   p->loop();
+
+  delete ff;
+  delete f;
+  delete cc;
+  delete p;
 
   return 0;
 }
