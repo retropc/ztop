@@ -11,6 +11,10 @@
 
 using std::string;
 
+/**********************************************
+ * PCapException
+ **********************************************/
+
 PCapException::PCapException(const PCap *p) {
   std::ostringstream s;
   s << "PCapException: " << p->errbuf;
@@ -28,6 +32,10 @@ const char *PCapException::what() const throw() {
 
 PCapException::~PCapException() throw() {
 }
+
+/**********************************************
+ * PCap
+ **********************************************/
 
 PCap::PCap() {
   char *device = pcap_lookupdev(errbuf);
@@ -82,6 +90,10 @@ void PCap::decode(const struct pcap_pkthdr *header, const u_char *data) {
   }
 }
 
+/**********************************************
+ * PCapEthernetFrame
+ **********************************************/
+
 PCapEthernetFrame::PCapEthernetFrame(const PCapEthernetFrame &packet) {
   init(packet.caplength, packet.length, packet.packet);
 }
@@ -127,6 +139,10 @@ PCapEthernetFrame &PCapEthernetFrame::operator=(const PCapEthernetFrame &p) {
 PCapEthernetFrame::~PCapEthernetFrame() {
   delete[] this->packet;
 }
+
+/**********************************************
+ * PCapIPv4Packet
+ **********************************************/
 
 PCapIPv4Packet::PCapIPv4Packet(const PCapEthernetFrame &packet): PCapEthernetFrame(packet) {
   init(packet);
