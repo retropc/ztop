@@ -48,19 +48,19 @@ PCap::~PCap() {
 }
 
 void PCap::init(string device) {
-  handle = pcap_open_live(device.c_str(), BUFSIZ, 0, 1000, errbuf);
+  handle = pcap_open_live(const_cast<char *>(device.c_str()), BUFSIZ, 0, 1000, errbuf);
   if(!handle)
     throw PCapException(this);
 }
 
 extern "C" void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
-  PCap *p = (PCap *)args;
+  PCap *p = reinterpret_cast<PCap *>(args);
 
   p->decode(header, packet);
 }
 
 void PCap::loop() {
-  pcap_loop(handle, 0, got_packet, (u_char *)this);
+  pcap_loop(handle, 0, got_packet, reinterpret_cast<u_char *>(this));
 }
 
 void PCap::decode(const struct pcap_pkthdr *header, const u_char *data) {
@@ -105,9 +105,9 @@ void PCapEthernetFrame::init(bpf_u_int32 caplength, bpf_u_int32 length, const u_
 
   this->packet = new u_char[caplength];
 
-  memcpy((void *)this->packet, packet, caplength);
+  memcpy(const_cast<u_char *>(this->packet), packet, caplength);
 
-  ethernetheader = (struct sniff_ethernet *)this->packet;
+  ethernetheader = reinterpret_cast<const struct sniff_ethernet *>(this->packet);
 
   l2headerlength = SIZE_ETHERNET;  
   l2payload = this->packet + l2headerlength;
@@ -136,7 +136,7 @@ void PCapIPv4Packet::init(const PCapEthernetFrame &packet) {
   if(caplength - l2headerlength < sizeof(struct sniff_ip))
     throw PCapException("Invalid ip packet length.");
 
-  ipheader = (struct sniff_ip *)l2payload;
+  ipheader = reinterpret_cast<const struct sniff_ip *>(l2payload);
 
   l3headerlength = IP_HL(ipheader) * 4;
 
@@ -144,4 +144,8 @@ void PCapIPv4Packet::init(const PCapEthernetFrame &packet) {
     throw PCapException("Invalid IP header length.");
 
   l3payload = this->packet + l2headerlength + l3headerlength;
+}
+
+PCapIPv4PacketHandler::~PCapIPv4PacketHandler() {
+  /* EMPTY */
 }
