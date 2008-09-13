@@ -3,3 +3,4 @@ syntax: glob
 ztop
 ztop.core
 core
+filters.zpp

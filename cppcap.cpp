@@ -5,10 +5,11 @@
  * See LICENSE for licensing information.
  */
 
+#include <sstream>
+
 #include "cppcap.h"
 
-#include <sstream>
-#include <iostream>
+using std::string;
 
 PCapException::PCapException(const PCap *p) {
   std::ostringstream s;
@@ -17,12 +18,15 @@ PCapException::PCapException(const PCap *p) {
   message = s.str();
 }
 
+PCapException::PCapException(const string &p) {
+  message = p;
+}
+
 const char *PCapException::what() const throw() {
   return message.c_str();
 }
 
 PCapException::~PCapException() throw() {
-  /* EMPTY */
 }
 
 PCap::PCap() {
@@ -52,14 +56,92 @@ void PCap::init(string device) {
 extern "C" void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
   PCap *p = (PCap *)args;
 
-  p->packet(header, packet);
+  p->decode(header, packet);
 }
 
 void PCap::loop() {
   pcap_loop(handle, 0, got_packet, (u_char *)this);
 }
 
-void PCap::packet(const struct pcap_pkthdr *header, const u_char *data) {
-  std::cout << "got zee packet!!\n";
+void PCap::decode(const struct pcap_pkthdr *header, const u_char *data) {
+  PCapEthernetFrame p(header, data);
+
+  switch(p.ethernetheader->ether_type) {
+    case PROTOCOL_IP:
+      {
+        PCapIPv4Packet ipp(p);
+
+        if(ipv4handler != NULL)
+          ipv4handler->execute(ipp);
+
+      }
+
+      break;
+    default:
+      break;
+  }
 }
 
+PCapEthernetFrame::PCapEthernetFrame(const PCapEthernetFrame &packet) {
+  init(packet.caplength, packet.length, packet.packet);
+}
+
+PCapEthernetFrame::PCapEthernetFrame(const struct pcap_pkthdr *header, const u_char *packet) {
+  init(header, packet);
+}
+
+void PCapEthernetFrame::init(const struct pcap_pkthdr *header, const u_char *packet) {
+  init(header->caplen, header->len, packet);
+}
+
+void PCapEthernetFrame::init(bpf_u_int32 caplength, bpf_u_int32 length, const u_char *packet) {
+  this->packet = 0;
+
+  this->caplength = caplength;
+  this->length = length;
+
+  if(caplength < sizeof(struct sniff_ethernet))
+    throw PCapException("Invalid ethernet frame length.");
+
+  this->packet = new u_char[caplength];
+
+  memcpy((void *)this->packet, packet, caplength);
+
+  ethernetheader = (struct sniff_ethernet *)this->packet;
+
+  l2headerlength = SIZE_ETHERNET;  
+  l2payload = this->packet + l2headerlength;
+}
+
+PCapEthernetFrame &PCapEthernetFrame::operator=(const PCapEthernetFrame &p) {
+  if(&p == this) /* self assignment */
+    return *this;
+
+  delete[] this->packet;
+
+  init(p.caplength, p.length, p.packet);
+
+  return *this;
+}
+
+PCapEthernetFrame::~PCapEthernetFrame() {
+  delete[] this->packet;
+}
+
+PCapIPv4Packet::PCapIPv4Packet(const PCapEthernetFrame &packet): PCapEthernetFrame(packet) {
+  init(packet);
+}
+
+void PCapIPv4Packet::init(const PCapEthernetFrame &packet) {
+  if(caplength - l2headerlength < sizeof(struct sniff_ip))
+    throw PCapException("Invalid ip packet length.");
+
+  ipheader = (struct sniff_ip *)l2payload;
+
+  l3headerlength = IP_HL(ipheader) * 4;
+
+  if(l3headerlength < 20)
+    throw PCapException("Invalid IP header length.");
+
+  l3payload = this->packet + l2headerlength + l3headerlength;
+}

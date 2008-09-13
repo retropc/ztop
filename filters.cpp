@@ -18,7 +18,8 @@ FilterList::~FilterList() {
     delete *itt;
 }
 
-void FilterList::add(AddressComparator &filter) {
+void FilterList::add(const AddressComparator &filter) {
+  filter.clone();
   AddressComparator *f = filter.clone();
 
   filters.push_back(f);

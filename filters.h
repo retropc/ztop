@@ -11,7 +11,7 @@ private:
 public:
   FilterList();
   ~FilterList();
-  void add(AddressComparator &filter);
+  void add(const AddressComparator &filter);
   bool execute(address_t address);
 };
 

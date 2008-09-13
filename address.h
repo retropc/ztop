@@ -13,8 +13,6 @@
 #include <stdexcept>
 #include <string>
 
-using std::string;
-
 typedef u_int32_t address_t;
 typedef unsigned short mask_t;
 
@@ -25,11 +23,11 @@ public:
 
 class AddressComparator {
 protected:
-  address_t string_to_addr(string addr);
+  address_t string_to_addr(std::string addr);
 public:
   virtual bool match(address_t addr) = 0;
-  virtual AddressComparator *clone() = 0;
-  bool match(string addr);
+  virtual AddressComparator *clone() const = 0;
+  bool match(std::string addr);
 };
 
 class PlainAddress: public AddressComparator {
@@ -38,34 +36,38 @@ private:
   PlainAddress();
 public:
   PlainAddress(address_t address);
-  PlainAddress(string address);
+  PlainAddress(std::string address);
 
   address_t c_addr();
 
   using AddressComparator::match;
   bool match(address_t address);
 
-  PlainAddress *clone();
+  PlainAddress *clone() const;
+
+  static address_t convert(const struct in_addr &address);
+  static std::string convert_str(const struct in_addr &address);
+  static std::string convert_str(const address_t &address);
 };
 
 class CidrMask: public AddressComparator {
 private:
   address_t andedaddress;
   address_t mask; 
-  mask_t string_to_mask(string mask);
+  mask_t string_to_mask(std::string mask);
   CidrMask();
   void init(address_t address, mask_t mask);
 public:
   CidrMask(address_t address, mask_t mask);
-  CidrMask(address_t address, string mask);
-  CidrMask(string address, mask_t mask);
-  CidrMask(string address, string mask);
-  CidrMask(string address);
+  CidrMask(address_t address, std::string mask);
+  CidrMask(std::string address, mask_t mask);
+  CidrMask(std::string address, std::string mask);
+  CidrMask(std::string address);
 
   using AddressComparator::match;
   bool match(address_t address);
 
-  CidrMask *clone();
+  CidrMask *clone() const;
 };
 
 #endif
