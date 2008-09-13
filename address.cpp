@@ -13,6 +13,8 @@
 
 #include "address.h"
 
+using std::string;
+
 AddressParseException::AddressParseException(): std::runtime_error("AddressParseException") {
   /* EMPTY */
 }
@@ -29,7 +31,7 @@ address_t AddressComparator::string_to_addr(string address) {
   if(inet_aton(address.c_str(), &pin) != 1)
     throw AddressParseException();
 
-  return ntohl(pin.s_addr);
+  return PlainAddress::convert(pin);
 }
 
 bool AddressComparator::match(string address) {
@@ -56,8 +58,25 @@ address_t PlainAddress::c_addr() {
   return address;
 }
 
-PlainAddress *PlainAddress::clone() {
+PlainAddress *PlainAddress::clone() const {
   return new PlainAddress(*this);
+}
+
+address_t PlainAddress::convert(const struct in_addr &address) {
+  return ntohl(address.s_addr);
+}
+
+string PlainAddress::convert_str(const struct in_addr &address) {
+  return inet_ntoa(address);
+}
+
+string PlainAddress::convert_str(const address_t &address) {
+  struct in_addr pin;
+
+  memset(&pin, 0, sizeof(pin));
+  pin.s_addr = ntohl(address);
+
+  return PlainAddress::convert_str(pin);
 }
 
 /**********************************************
@@ -116,6 +135,6 @@ bool CidrMask::match(address_t addr) {
   return (addr & mask) == this->andedaddress;
 }
 
-CidrMask *CidrMask::clone() {
+CidrMask *CidrMask::clone() const {
   return new CidrMask(*this);
 }
