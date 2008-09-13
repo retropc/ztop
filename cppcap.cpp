@@ -162,6 +162,10 @@ void PCapIPv4Packet::init(const PCapEthernetFrame &packet) {
   l3payload = this->packet + l2headerlength + l3headerlength;
 }
 
+/**********************************************
+ * PCapIPv4PacketHandler
+ **********************************************/
+
 PCapIPv4PacketHandler::~PCapIPv4PacketHandler() {
   /* EMPTY */
 }

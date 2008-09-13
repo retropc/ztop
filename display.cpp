@@ -12,6 +12,10 @@
 
 using std::cout;
 
+/**********************************************
+ * CounterDisplay
+ **********************************************/
+
 CounterDisplay::CounterDisplay(PacketCounter &p) {
   this->p = &p;
 }

@@ -15,6 +15,10 @@
 
 using std::string;
 
+/**********************************************
+ * AddressParseException
+ **********************************************/
+
 AddressParseException::AddressParseException(): std::runtime_error("AddressParseException") {
   /* EMPTY */
 }

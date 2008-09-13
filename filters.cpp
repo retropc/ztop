@@ -7,6 +7,10 @@
 
 #include "filters.h"
 
+/**********************************************
+ * FilterList
+ **********************************************/
+
 FilterList::FilterList(): filters() {
   /* EMPTY */
 }
