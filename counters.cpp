@@ -7,6 +7,10 @@
 
 #include "counters.h"
 
+/**********************************************
+ * PacketCounter
+ **********************************************/
+
 PacketCounter::PacketCounter(): counts() {
   /* EMPTY */
 }
